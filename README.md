@@ -37,7 +37,7 @@ implementation 'tech:hiddenproject:aide-all:1.0'
 
 ___
 
-* Learn more at Progressive [Wiki](https://github.com/CrissNamon/aide/wiki)
+* Learn more at Aide [Wiki](https://github.com/CrissNamon/aide/wiki)
 * Look at some examples
   in [example](https://github.com/CrissNamon/aide/tree/main/aide-all/src/main/java/tech/hiddenproject/aide/example) package
 
