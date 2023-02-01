@@ -6,17 +6,19 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 /**
+ * Stores metadata of wrapper function for {@link LambdaWrapperHolder}.
+ *
  * @author Danila Rassokhin
  */
-public class FactoryMetadata {
+public class LambdaMetadata {
 
   private final String methodName;
-  private final MethodType factory;
+  private final MethodType declaringInterface;
   private final MethodType methodType;
 
-  public FactoryMetadata(Class<?> factory, Method method) {
+  public LambdaMetadata(Class<?> declaringInterface, Method method) {
     this.methodName = method.getName();
-    this.factory = MethodType.methodType(factory);
+    this.declaringInterface = MethodType.methodType(declaringInterface);
     this.methodType = MethodType.methodType(
         method.getReturnType(), Object.class, getParameterTypes(method));
   }
@@ -25,8 +27,8 @@ public class FactoryMetadata {
     return methodName;
   }
 
-  public MethodType getFactory() {
-    return factory;
+  public MethodType getDeclaringInterface() {
+    return declaringInterface;
   }
 
   public MethodType getMethodType() {
@@ -35,9 +37,9 @@ public class FactoryMetadata {
 
   @Override
   public String toString() {
-    return "FactoryMetadata{" +
+    return "LambdaMetadata{" +
         "methodName='" + methodName + '\'' +
-        ", factory=" + factory +
+        ", factory=" + declaringInterface +
         ", methodType=" + methodType +
         '}';
   }

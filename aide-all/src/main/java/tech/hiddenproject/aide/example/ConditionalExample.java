@@ -1,4 +1,4 @@
-package tech.hiddenproject.aide;
+package tech.hiddenproject.aide.example;
 
 import java.util.Objects;
 import tech.hiddenproject.aide.optional.IfTrueConditional;

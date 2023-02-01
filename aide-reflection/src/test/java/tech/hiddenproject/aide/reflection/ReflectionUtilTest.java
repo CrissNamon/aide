@@ -1,6 +1,7 @@
-package tech.hiddenproject.aide;
+package tech.hiddenproject.aide.reflection;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import tech.hiddenproject.aide.reflection.ReflectionUtil;
@@ -28,16 +29,21 @@ public class ReflectionUtilTest {
     Assertions.assertEquals(expected, actual);
   }
 
-  public static class TestClass {
+  @Test
+  public void getArgTypesTest() {
+    Object[] args = new Object[]{"Hi", 1};
+    Class<?>[] expected = new Class[]{String.class, Integer.class};
 
+    Class<?>[] actual = ReflectionUtil.getVarArgTypes(args);
+
+    Assertions.assertArrayEquals(expected, actual);
+  }
+
+  public static class TestClass {
     public Object get() {
       return new Object();
     }
 
-    public void get(Object arg0, Object arg1) {
-
-    }
-
+    public void get(Object arg0, Object arg1) {}
   }
-
 }

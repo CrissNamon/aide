@@ -1,4 +1,4 @@
-package tech.hiddenproject.aide;
+package tech.hiddenproject.aide.example;
 
 /**
  * @author Danila Rassokhin

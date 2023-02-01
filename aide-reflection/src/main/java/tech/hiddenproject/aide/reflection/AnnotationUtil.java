@@ -1,4 +1,4 @@
-package tech.hiddenproject.progressive.util;
+package tech.hiddenproject.aide.reflection;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
@@ -9,17 +9,18 @@ import java.lang.annotation.Target;
 /**
  * Processes annotations.
  */
-public final class ComponentAnnotationProcessor {
+public class AnnotationUtil {
 
   /**
    * Checks if class annotated with annotation.
    *
-   * @param an Annotation to check
-   * @param c  Class to check
+   * @param annotationType Annotation to check
+   * @param clazz          Class to check
    * @return true if class is annotated with given annotation
    */
-  public static boolean isAnnotationPresent(Class<? extends Annotation> an, Class<?> c) {
-    return findAnnotation(c, an) != null;
+  public static <A extends Annotation> boolean isAnnotationPresent(Class<?> clazz,
+                                                                   Class<A> annotationType) {
+    return findAnnotation(clazz, annotationType) != null;
   }
 
   /**

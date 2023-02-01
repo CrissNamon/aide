@@ -1,4 +1,9 @@
-package tech.hiddenproject.aide.optional;/**
+package tech.hiddenproject.aide.optional;
+
+/**
  * @author Danila Rassokhin
- */public interface Action {
+ */
+public interface Action {
+
+  void make();
 }

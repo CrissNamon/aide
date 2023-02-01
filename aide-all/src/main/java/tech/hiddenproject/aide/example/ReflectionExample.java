@@ -1,4 +1,4 @@
-package tech.hiddenproject.aide;
+package tech.hiddenproject.aide.example;
 
 import tech.hiddenproject.aide.reflection.LambdaWrapper;
 import tech.hiddenproject.aide.reflection.LambdaWrapperHolder;

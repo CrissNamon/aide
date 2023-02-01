@@ -1,4 +1,4 @@
-package tech.hiddenproject.aide.reflection;
+package tech.hiddenproject.aide.reflection.exception;
 
 /**
  * @author Danila Rassokhin

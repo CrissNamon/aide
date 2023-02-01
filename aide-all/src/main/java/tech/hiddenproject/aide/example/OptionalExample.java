@@ -1,4 +1,4 @@
-package tech.hiddenproject.aide;
+package tech.hiddenproject.aide.example;
 
 import tech.hiddenproject.aide.optional.BooleanOptional;
 import tech.hiddenproject.aide.optional.StringOptional;

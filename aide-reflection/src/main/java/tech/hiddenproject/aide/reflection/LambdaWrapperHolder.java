@@ -4,57 +4,182 @@ import java.lang.invoke.CallSite;
 import java.lang.invoke.LambdaMetafactory;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import tech.hiddenproject.aide.optional.BooleanOptional;
+import tech.hiddenproject.aide.reflection.annotation.ExactInvoker;
+import tech.hiddenproject.aide.reflection.annotation.Invoker;
+import tech.hiddenproject.aide.reflection.exception.ReflectionException;
+import tech.hiddenproject.aide.reflection.signature.AbstractSignature;
+import tech.hiddenproject.aide.reflection.signature.ExactMethodSignature;
+import tech.hiddenproject.aide.reflection.signature.MethodSignature;
 
 /**
+ * Stores all wrapper signatures and wraps method into them. Uses {@link LambdaMetafactory} to wrap
+ * methods into lambda functions dynamically, so reflective method call will be as fast as direct
+ * calls.
+ *
  * @author Danila Rassokhin
  */
-public class LambdaFactoryHolder {
+public enum LambdaWrapperHolder {
+
+  INSTANCE(LambdaWrapper.Factory.get());
 
   private final MethodHandles.Lookup lookup = MethodHandles.lookup();
-  private final Map<ExactMethodSignature, FactoryMetadata> factoryMetadata = new HashMap<>();
-  private final Map<MethodSignature, FactoryMetadata> rawFactoryMetadata = new HashMap<>();
+  private final Map<AbstractSignature, LambdaMetadata> invokers = new HashMap<>();
+  private final Map<AbstractSignature, LambdaMetadata> exactInvokers = new HashMap<>();
 
-  public void add(Class<?> factory) {
-    BooleanOptional.of(factory.isInterface())
-        .ifFalseThrow(() -> new RuntimeException());
+  LambdaWrapperHolder(Method... methods) {
+    add(methods);
+  }
 
-    Arrays.stream(factory.getDeclaredMethods())
+  /**
+   * Adds new interface to create wrappers from.
+   *
+   * @param declaringInterface Must be an interface
+   */
+  public void add(Class<?> declaringInterface) {
+    BooleanOptional.of(declaringInterface.isInterface())
+        .ifFalseThrow(
+            () -> ReflectionException.format("Class %s must be an interface", declaringInterface));
+
+    Arrays.stream(declaringInterface.getDeclaredMethods())
         .forEach(this::add);
   }
 
+  /**
+   * Adds new method as wrapper. See {@link LambdaWrapperHolder#addMethod(Method)}.
+   *
+   * @param methods {@link Method}s to add
+   */
   public void add(Method... methods) {
     Arrays.stream(methods).forEach(this::addMethod);
   }
 
+  /**
+   * Adds new method as wrapper function. Method must be annotated as {@link Invoker} or
+   * {@link ExactInvoker}. First parameter of given method must be {@link Object} to pass method
+   * caller.
+   *
+   * @param m {@link Method} to create wrapper from
+   */
   public void addMethod(Method m) {
     BooleanOptional.of(checkAnnotations(m))
-        .ifFalseThrow(() -> new RuntimeException());
+        .ifFalseThrow(() -> ReflectionException.format("Method %s must be annotated as @Invoker "
+                                                           + "or @ExactInvoker", m));
     Invoker invoker = m.getAnnotation(Invoker.class);
     ExactInvoker exactInvoker = m.getAnnotation(ExactInvoker.class);
-
     BooleanOptional.of(Objects.nonNull(invoker)).ifTrueThen(v -> addInvoker(m));
     BooleanOptional.of(Objects.nonNull(exactInvoker)).ifTrueThen(v -> addExactInvoker(m));
   }
 
+  /**
+   * Wraps method into wrapper function to invoke it fast. Method must be {@link Modifier#PUBLIC}.
+   *
+   * @param m   {@link Method}
+   * @param <F> Interface declaring wrapper function
+   * @return Interface wrapper
+   */
+  public <F> F wrap(Method m) {
+    return wrap(m.getDeclaringClass(), m.getName(), m.getParameterTypes());
+  }
+
+  /**
+   * Searches for function with given name and parameter types in {@link Object#getClass()} and
+   * wraps method into wrapper function to invoke it fast. Method must be {@link Modifier#PUBLIC}.
+   *
+   * @param obj            Object to search method in
+   * @param name           {@link Method} name
+   * @param parameterTypes {@link Method} parameter types
+   * @param <F>            Interface declaring wrapper function
+   * @return Interface wrapper
+   */
+  public <F> F wrap(Object obj, String name, Class<?>... parameterTypes) {
+    return wrap(obj.getClass(), name, parameterTypes);
+  }
+
+  /**
+   * Searches for function with given name and parameter types in given class and wraps method into
+   * wrapper function to invoke it fast. Method must be {@link Modifier#PUBLIC}.
+   *
+   * @param c              Class to search method in
+   * @param name           {@link Method} name
+   * @param parameterTypes {@link Method} parameter types
+   * @param <F>            Interface declaring wrapper function
+   * @return Interface wrapper
+   */
+  public <F> F wrap(Class<?> c, String name, Class<?>... parameterTypes) {
+    return createWrapper(false, c, name, parameterTypes);
+  }
+
+  /**
+   * Searches for function with given name and parameter types in given class and wraps method into
+   * wrapper function with exactly same signature to invoke it fast. Method must be
+   * {@link Modifier#PUBLIC}.
+   *
+   * @param c              Class to search method in
+   * @param name           {@link Method} name
+   * @param parameterTypes {@link Method} parameter types
+   * @param <F>            Interface declaring wrapper function
+   * @return Interface wrapper
+   */
+  public <F> F wrapExact(Class<?> c, String name, Class<?>... parameterTypes) {
+    return createWrapper(true, c, name, parameterTypes);
+  }
+
+  /**
+   * Wraps method into wrapper function with exactly same signature to invoke it fast. Method must
+   * be {@link Modifier#PUBLIC}.
+   *
+   * @param m   {@link Method}
+   * @param <F> Interface declaring wrapper function
+   * @return Interface wrapper
+   */
+  public <F> F wrapExact(Method m) {
+    return wrapExact(m.getDeclaringClass(), m.getName(), m.getParameterTypes());
+  }
+
+  /**
+   * Searches for function with given name and parameter types in {@link Object#getClass()} and
+   * wraps method into wrapper function with exactly same signature to invoke it fast. Method must
+   * be {@link Modifier#PUBLIC}.
+   *
+   * @param obj            Object to search method in
+   * @param name           {@link Method} name
+   * @param parameterTypes {@link Method} parameter types
+   * @param <F>            Interface declaring wrapper function
+   * @return Interface wrapper
+   */
+  public <F> F wrapExact(Object obj, String name, Class<?>... parameterTypes) {
+    return wrapExact(obj.getClass(), name, parameterTypes);
+  }
+
+  private <F> F createWrapper(boolean exact, Class<?> c, String name, Class<?>... parameterTypes) {
+    try {
+      Method method = ReflectionUtil.getMethod(c, name, parameterTypes);
+      BooleanOptional.of(Modifier.isPublic(method.getModifiers()))
+          .ifFalseThrow(
+              () -> new IllegalAccessException("Wrapping is supported for PUBLIC methods only!"));
+      return (F) createCallSite(method, exact).getTarget().invoke();
+    } catch (Throwable e) {
+      throw new ReflectionException(e);
+    }
+  }
+
   private void addExactInvoker(Method method) {
-    ExactMethodSignature methodSignature = factorySignature(method);
-    FactoryMetadata metadata = createMetadata(method.getDeclaringClass(), method);
-    factoryMetadata.put(methodSignature, metadata);
+    ExactMethodSignature methodSignature = ExactMethodSignature.fromWrapper(method);
+    LambdaMetadata metadata = new LambdaMetadata(method.getDeclaringClass(), method);
+    exactInvokers.putIfAbsent(methodSignature, metadata);
   }
 
   private void addInvoker(Method method) {
-    MethodSignature methodSignature = new MethodSignature(method.getReturnType(),
-                                                          method.getParameterCount() - 1);
-    FactoryMetadata metadata = createMetadata(method.getDeclaringClass(), method);
-    rawFactoryMetadata.put(methodSignature, metadata);
+    MethodSignature methodSignature = MethodSignature.fromWrapper(method);
+    LambdaMetadata metadata = new LambdaMetadata(method.getDeclaringClass(), method);
+    invokers.putIfAbsent(methodSignature, metadata);
   }
 
   private boolean checkAnnotations(Method method) {
@@ -62,90 +187,29 @@ public class LambdaFactoryHolder {
         || method.isAnnotationPresent(ExactInvoker.class);
   }
 
-  public <F> F wrap(Method m) throws Throwable {
-    return (F) createCallSite(m).getTarget().invoke();
-  }
-
-  public <F> F wrap(Object obj, String name, Class<?>... parameterTypes) {
-    return wrap(obj.getClass(), name, parameterTypes);
-  }
-
-  public <F> F wrap(Class<?> c, String name, Class<?>... parameterTypes) {
-    try {
-      Method method = ReflectionUtil.getMethod(c, name, parameterTypes);
-      return (F) createCallSite(method).getTarget().invoke();
-    } catch (Throwable e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private CallSite createCallSite(Method m) throws Exception {
-    Class<?> rType = m.getReturnType() == void.class ? void.class : Object.class;
-    ExactMethodSignature exactMethodSignature = rawSignature(m);
-    MethodSignature methodSignature = new MethodSignature(rType, m.getParameterCount());
-    if (!rawFactoryMetadata.containsKey(methodSignature) && !factoryMetadata.containsKey(
-        exactMethodSignature)) {
-      throw new RuntimeException("No factories found!");
-    }
-    FactoryMetadata metadata = factoryMetadata.getOrDefault(
-        exactMethodSignature,
-        rawFactoryMetadata.get(methodSignature));
+  private CallSite createCallSite(Method m, boolean exact) throws Exception {
+    LambdaMetadata metadata = getMetadata(m, exact);
     MethodHandle methodHandle = lookup.unreflect(m);
-    return LambdaMetafactory.metafactory(lookup, metadata.getMethodName(), metadata.getFactory(),
+    return LambdaMetafactory.metafactory(lookup, metadata.getMethodName(),
+                                         metadata.getDeclaringInterface(),
                                          metadata.getMethodType(),
-                                         methodHandle, methodHandle.type());
+                                         methodHandle, methodHandle.type()
+    );
   }
 
-  private FactoryMetadata createMetadata(Class<?> factory, Method m) {
-    return new FactoryMetadata(m.getName(), factory, m);
-  }
-
-  private static Class<?>[] getParameterTypes(Method m) {
-    return Arrays.stream(m.getParameterTypes())
-        .skip(1)
-        .collect(Collectors.toList())
-        .toArray(new Class[]{});
-  }
-
-  private static ExactMethodSignature rawSignature(Method method) {
-    return new ExactMethodSignature(method.getReturnType(), method.getParameterTypes());
-  }
-
-  private static ExactMethodSignature factorySignature(Method method) {
-    return new ExactMethodSignature(method.getReturnType(), getParameterTypes(method));
-  }
-
-  private class FactoryMetadata {
-
-    private final String methodName;
-    private final MethodType factory;
-    private final MethodType methodType;
-
-    public FactoryMetadata(String methodName, Class<?> factory, Method method) {
-      this.methodName = methodName;
-      this.factory = MethodType.methodType(factory);
-      this.methodType = MethodType.methodType(method.getReturnType(), Object.class, getParameterTypes(method));
+  private LambdaMetadata getMetadata(Method method, boolean exact) {
+    AbstractSignature signature;
+    Map<AbstractSignature, LambdaMetadata> container;
+    if (exact) {
+      signature = ExactMethodSignature.from(method);
+      container = exactInvokers;
+    } else {
+      signature = MethodSignature.from(method);
+      container = invokers;
     }
-
-    public String getMethodName() {
-      return methodName;
+    if (!container.containsKey(signature)) {
+      throw ReflectionException.format("No wrappers found for method %s", method);
     }
-
-    public MethodType getFactory() {
-      return factory;
-    }
-
-    public MethodType getMethodType() {
-      return methodType;
-    }
-
-    @Override
-    public String toString() {
-      return "FactoryMetadata{" +
-          "methodName='" + methodName + '\'' +
-          ", factory=" + factory +
-          ", methodType=" + methodType +
-          '}';
-    }
+    return container.get(signature);
   }
 }
