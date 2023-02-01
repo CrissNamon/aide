@@ -39,7 +39,7 @@ ___
 
 * Learn more at Progressive [Wiki](https://github.com/CrissNamon/aide/wiki)
 * Look at some examples
-  in [example](https://github.com/CrissNamon/aide/blob/main/src/main/java/tech/hiddenproject/aide-all/) package
+  in [example](https://github.com/CrissNamon/aide/tree/main/aide-all/src/main/java/tech/hiddenproject/aide/example) package
 
 ## Dependencies and source
 
