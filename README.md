@@ -1,7 +1,8 @@
 ## About
 
-Aide is a set of useful utils to simplify your code
+[![Build](https://github.com/CrissNamon/aide/actions/workflows/maven.yml/badge.svg)](https://github.com/CrissNamon/aide/actions/workflows/maven.yml)
 
+Aide is a set of useful utils to simplify your code
 ## Content
 
 * Reflection
