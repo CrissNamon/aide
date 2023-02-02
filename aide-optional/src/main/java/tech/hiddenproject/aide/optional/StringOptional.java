@@ -53,10 +53,11 @@ public class StringOptional implements GenericOptional<String> {
    * Changes value if condition is success.
    *
    * @param condition Condition to check
-   * @param mapper Mapper {@link Function}
+   * @param mapper    Mapper {@link Function}
    * @return New {@link StringOptional}
    */
-  public StringOptional mapOnCondition(Predicate<String> condition, Function<String, String> mapper) {
+  public StringOptional mapOnCondition(Predicate<String> condition,
+                                       Function<String, String> mapper) {
     if (condition.test(value)) {
       return of(mapper.apply(value));
     }

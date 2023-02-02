@@ -118,6 +118,60 @@ public enum LambdaWrapperHolder {
 
   /**
    * Searches for function with given name and parameter types in given class and wraps method into
+   * wrapper function to invoke it fast. Method must be {@link Modifier#PUBLIC}. Uses
+   * {@link MethodHolder} to provide type safety.
+   *
+   * @param c              Class to search method in
+   * @param name           {@link Method} name
+   * @param parameterTypes {@link Method} parameter types
+   * @param <F>            Interface declaring wrapper function
+   * @param <C>            Caller type
+   * @param <R>            Return type
+   * @return Interface wrapper
+   */
+  public <F, C, R> MethodHolder<F, C, R> wrapSafe(Class<C> c, String name,
+                                                  Class<?>... parameterTypes) {
+    Method realMethod = ReflectionUtil.getMethod(c, name, parameterTypes);
+    return wrapSafe(realMethod);
+  }
+
+  /**
+   * Searches for function with given name and parameter types in given class and wraps method into
+   * wrapper function to invoke it fast. Method must be {@link Modifier#PUBLIC}. Uses
+   * {@link MethodHolder} to provide type safety.
+   *
+   * @param method Method to wrap
+   * @param <F>    Interface declaring wrapper function
+   * @param <C>    Caller type
+   * @param <R>    Return type
+   * @return Interface wrapper
+   */
+  public <F, C, R> MethodHolder<F, C, R> wrapSafe(Method method) {
+    F wrapper = wrap(method);
+    return new MethodHolder<>(wrapper);
+  }
+
+  /**
+   * Searches for function with given name and parameter types in given class and wraps method into
+   * wrapper function to invoke it fast. Method must be {@link Modifier#PUBLIC}. Uses
+   * {@link MethodHolder} to provide type safety.
+   *
+   * @param caller         Object to search method in class of
+   * @param name           {@link Method} name
+   * @param parameterTypes {@link Method} parameter types
+   * @param <F>            Interface declaring wrapper function
+   * @param <C>            Caller type
+   * @param <R>            Return type
+   * @return Interface wrapper
+   */
+  public <F, C, R> MethodHolder<F, C, R> wrapSafe(C caller, String name,
+                                                  Class<?>... parameterTypes) {
+    Method realMethod = ReflectionUtil.getMethod(caller.getClass(), name, parameterTypes);
+    return wrapSafe(realMethod);
+  }
+
+  /**
+   * Searches for function with given name and parameter types in given class and wraps method into
    * wrapper function with exactly same signature to invoke it fast. Method must be
    * {@link Modifier#PUBLIC}.
    *

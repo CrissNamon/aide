@@ -1,10 +1,8 @@
 package tech.hiddenproject.aide.reflection;
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import tech.hiddenproject.aide.reflection.ReflectionUtil;
 
 /**
  * @author Danila Rassokhin
@@ -40,10 +38,12 @@ public class ReflectionUtilTest {
   }
 
   public static class TestClass {
+
     public Object get() {
       return new Object();
     }
 
-    public void get(Object arg0, Object arg1) {}
+    public void get(Object arg0, Object arg1) {
+    }
   }
 }

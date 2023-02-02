@@ -60,8 +60,10 @@ public class IfTrueConditionalTest {
 
     IfTrueConditional ifTrueConditional = IfTrueConditional.create();
 
-    Assertions.assertThrows(RuntimeException.class,
-                            () -> ifTrueConditional.orElseThrows(() -> new RuntimeException()));
+    Assertions.assertThrows(
+        RuntimeException.class,
+        () -> ifTrueConditional.orElseThrows(() -> new RuntimeException())
+    );
   }
 
 }

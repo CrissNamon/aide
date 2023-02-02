@@ -1,7 +1,6 @@
 package tech.hiddenproject.aide.reflection;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 import tech.hiddenproject.aide.reflection.exception.ReflectionException;
