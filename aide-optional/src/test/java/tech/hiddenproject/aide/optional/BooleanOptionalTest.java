@@ -34,7 +34,7 @@ public class BooleanOptionalTest {
         .ifFalseThen(booleanAction);
 
     Assertions.assertThrows(RuntimeException.class, () -> BooleanOptional.of(true)
-            .ifTrueThrow(throwableSupplier));
+        .ifTrueThrow(throwableSupplier));
     Assertions.assertThrows(RuntimeException.class, () -> BooleanOptional.of(false)
         .ifFalseThrow(throwableSupplier));
 
@@ -44,16 +44,21 @@ public class BooleanOptionalTest {
   }
 
   public class BooleanConsumer implements Consumer<Boolean> {
+
     @Override
-    public void accept(Boolean aBoolean) {}
+    public void accept(Boolean aBoolean) {
+    }
   }
 
   public class BooleanAction implements Action {
+
     @Override
-    public void make() {}
+    public void make() {
+    }
   }
 
   public class ThrowableSupplier implements Supplier<RuntimeException> {
+
     @Override
     public RuntimeException get() {
       return new RuntimeException();

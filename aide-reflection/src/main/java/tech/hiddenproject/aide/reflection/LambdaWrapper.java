@@ -1,7 +1,10 @@
 package tech.hiddenproject.aide.reflection;
 
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 import tech.hiddenproject.aide.reflection.annotation.Invoker;
+import tech.hiddenproject.aide.reflection.exception.ReflectionException;
 
 /**
  * Basic wrapper functions for {@link LambdaWrapperHolder}. Will be loaded on
@@ -116,6 +119,8 @@ public interface LambdaWrapper {
   <T> T apply(Object caller, Object arg0, Object arg1, Object arg2, Object arg3, Object arg4,
               Object arg5);
 
+  <F> F invoke(Object caller);
+
   /**
    * Factory for {@link LambdaWrapper} to prepare all methods. Created for optimization.
    */
@@ -127,7 +132,7 @@ public interface LambdaWrapper {
     public static final String FUNCTION_NAME = "apply";
 
     public static final Method GETTER = ReflectionUtil.getMethod(LambdaWrapper.class, GETTER_NAME,
-                                                                        Object.class
+                                                                 Object.class
     );
     public static final Method SETTER =
         ReflectionUtil.getMethod(LambdaWrapper.class, SETTER_NAME, Object.class, 2);
@@ -179,5 +184,38 @@ public interface LambdaWrapper {
           Factory.FUNCTION_ARGS_5, Factory.FUNCTION_ARGS_6
       };
     }
+  }
+
+  class SafeInvoker {
+
+    private static final Map<Integer, ArgumentMatcher<Object, Object, Object[], ?>> ARGUMENT_MATCHERS = new HashMap<>();
+
+    public static <T> T apply(Object holder, Object caller, Object[] args) {
+      switch (args.length) {
+        case 0:
+          return cast(holder).get(caller);
+        case 1:
+          return cast(holder).apply(caller, args[0]);
+        case 2:
+          return cast(holder).apply(caller, args[0], args[1]);
+        case 3:
+          return cast(holder).apply(caller, args[0], args[1], args[2]);
+        case 4:
+          return cast(holder).apply(caller, args[0], args[1], args[2], args[3]);
+        case 5:
+          return cast(holder).apply(caller, args[0], args[1], args[2], args[3], args[4]);
+        default:
+          return (T) ARGUMENT_MATCHERS.get(args.length).apply(holder, caller, args);
+      }
+    }
+
+    private static LambdaWrapper cast(Object holder) {
+      try {
+        return (LambdaWrapper) holder;
+      } catch (ClassCastException e) {
+        throw new ReflectionException("");
+      }
+    }
+
   }
 }

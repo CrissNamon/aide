@@ -48,10 +48,11 @@ public class LambdaWrapperHolderTest {
   public void wrapMethodExactInvokerTest() {
     Method realMethod = ReflectionUtil.getMethod(TestClass.class, "callConvert", String.class);
     Method wrapperMethod = ReflectionUtil.getMethod(TestWrapper.class, "convert", Object.class,
-                                                    String.class);
+                                                    String.class
+    );
     TestClass caller = Mockito.mock(TestClass.class);
     Mockito.when(caller.callConvert(anyString()))
-            .thenReturn(2);
+        .thenReturn(2);
 
     Assertions.assertDoesNotThrow(() -> holder.add(wrapperMethod));
 
@@ -71,6 +72,20 @@ public class LambdaWrapperHolderTest {
     Assertions.assertThrows(ReflectionException.class, () -> holder.wrapExact(realMethod));
   }
 
+  public interface TestWrapper {
+
+    @Invoker
+    void action(Object caller);
+
+    @ExactInvoker
+    int convert(Object caller, String text);
+  }
+
+  public interface InvalidTestWrapper {
+
+    void invalid();
+  }
+
   public static class TestClass {
 
     public void callAction() {
@@ -82,20 +97,8 @@ public class LambdaWrapperHolderTest {
     }
 
     public int callNoWrapper() {
-     return 0;
+      return 0;
     }
 
-  }
-
-  public interface TestWrapper {
-    @Invoker
-    void action(Object caller);
-
-    @ExactInvoker
-    int convert(Object caller, String text);
-  }
-
-  public interface InvalidTestWrapper {
-    void invalid();
   }
 }

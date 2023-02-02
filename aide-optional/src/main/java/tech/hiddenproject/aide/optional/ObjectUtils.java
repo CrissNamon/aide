@@ -14,7 +14,7 @@ public class ObjectUtils {
    * Checks if null objects count is greater than maxCount.
    *
    * @param maxCount Max count of null objects
-   * @param objects Objects to check
+   * @param objects  Objects to check
    * @return true if null objects count is greater than maxCount
    */
   public static boolean isMoreThanNull(int maxCount, Object... objects) {
