@@ -60,7 +60,7 @@ public class WhenConditional {
    * @param action {@link Action} to execute if all other branches will fail.
    */
   public void orElseDo(Action action) {
-    Action value = get().orElse(action);
+    Action value = get().map(Entry::getValue).orElse(action);
     value.make();
   }
 
@@ -68,7 +68,7 @@ public class WhenConditional {
    * @param action {@link Action} to execute anyway.
    */
   public void orFinally(Action action) {
-    Action value = get().orElse(() -> {});
+    Action value = get().map(Entry::getValue).orElse(() -> {});
     value.make();
     action.make();
   }
@@ -77,7 +77,7 @@ public class WhenConditional {
    * Does nothing if no branches' success.
    */
   public void orDoNothing() {
-    Action value = get().orElse(() -> {});
+    Action value = get().map(Entry::getValue).orElse(() -> {});
     value.make();
   }
 
@@ -92,9 +92,9 @@ public class WhenConditional {
     get().orElseThrow(exceptionSupplier);
   }
 
-  private Optional<Action> get() {
-    return conditions.entrySet().stream().filter(entry -> entry.getKey().test())
-        .map(Entry::getValue)
+  private Optional<Entry<BooleanAction, Action>> get() {
+    return conditions.entrySet().stream()
+        .filter(entry -> entry.getKey().test())
         .findFirst();
   }
 

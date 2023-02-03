@@ -1,4 +1,4 @@
-package tech.hiddenproject.aide.reflection;
+package tech.hiddenproject.aide.reflection.util;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;

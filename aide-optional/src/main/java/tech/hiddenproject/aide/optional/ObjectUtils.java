@@ -33,4 +33,25 @@ public class ObjectUtils {
     return isMoreThanNull(1, objects);
   }
 
+  /**
+   * Checks if object classes equals.
+   *
+   * @param o1 {@link Object}
+   * @param o2 {@link Object}
+   * @return true if o1.getClass.equals(o2.getClass())
+   */
+  public static boolean equalsClass(Object o1, Object o2) {
+    return o1.getClass().equals(o2.getClass());
+  }
+
+  /**
+   * Checks if object is instance of class.
+   *
+   * @param o {@link Object}
+   * @param c {@link Class}
+   * @return true if o.getClass().equals(c)
+   */
+  public static boolean isInstanceOf(Object o, Class<?> c) {
+    return o.getClass().equals(c);
+  }
 }

@@ -6,6 +6,7 @@ package tech.hiddenproject.aide.example;
 public class Main {
 
   public static void main(String... args) {
+
     System.out.println("REFLECTION EXAMPLE");
     ReflectionExample reflectionExample = new ReflectionExample();
 
