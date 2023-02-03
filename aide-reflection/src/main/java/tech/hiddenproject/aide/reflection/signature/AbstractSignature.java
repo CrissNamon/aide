@@ -22,4 +22,9 @@ public interface AbstractSignature {
    */
   Class<?>[] getParameterTypes();
 
+  /**
+   * @return Method's declaring class
+   */
+  Class<?> getDeclaringClass();
+
 }

@@ -1,7 +1,13 @@
 package tech.hiddenproject.aide.reflection.signature;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Objects;
+import tech.hiddenproject.aide.optional.IfTrueConditional;
+import tech.hiddenproject.aide.optional.ObjectUtils;
+import tech.hiddenproject.aide.reflection.exception.ReflectionException;
 
 /**
  * Represents generic method signature. {@link MethodSignature#equals(Object)} will check if method
@@ -15,13 +21,16 @@ public class MethodSignature implements AbstractSignature {
 
   private final Integer pCount;
 
-  public MethodSignature(Class<?> rType, Integer pCount) {
+  private final Class<?> declaringClass;
+
+  public MethodSignature(Class<?> declaringClass, Class<?> rType, Integer pCount) {
+    this.declaringClass = declaringClass;
     this.rType = rType;
     this.pCount = pCount;
   }
 
   public MethodSignature(Method method) {
-    this(method.getReturnType(), method.getParameterCount());
+    this(method.getDeclaringClass(), method.getReturnType(), method.getParameterCount());
   }
 
   /**
@@ -32,19 +41,37 @@ public class MethodSignature implements AbstractSignature {
    * @return Signature of method
    */
   public static MethodSignature fromWrapper(Method method) {
-    return new MethodSignature(method.getReturnType(), method.getParameterCount() - 1);
+    return new MethodSignature(
+        method.getDeclaringClass(), getReturnType(method), method.getParameterCount());
   }
 
   /**
-   * Creates signature from any method. If method return type is void, then return type of signature
-   * will be void and {@link Object} otherwise.
+   * Creates signature from any executable. If method return type is void, then return type of
+   * signature will be void and {@link Object} otherwise.
    *
-   * @param method Method to create signature from
+   * @param executable {@link Executable} to create signature from (Method or constructor)
    * @return Signature of method
    */
-  public static MethodSignature from(Method method) {
-    Class<?> rType = method.getReturnType() == void.class ? void.class : Object.class;
-    return new MethodSignature(rType, method.getParameterCount());
+  public static MethodSignature from(Executable executable) {
+    Class<?> rType = IfTrueConditional.create()
+        .ifTrue(executable.getClass().equals(Method.class))
+        .then(() -> getReturnType((Method) executable))
+        .ifTrue(executable.getClass().equals(Constructor.class))
+        .then(Object.class)
+        .orElseThrows(() -> ReflectionException.format("Wrapping is supported for "
+                                                           + "constructors and methods only!"));
+    int pCount = IfTrueConditional.create()
+        .ifTrue(ObjectUtils.isInstanceOf(executable, Method.class) && Modifier.isStatic(
+            executable.getModifiers()))
+        .then(executable.getParameterCount())
+        .ifTrue(ObjectUtils.isInstanceOf(executable, Method.class))
+        .then(executable.getParameterCount() + 1)
+        .orElseGet(executable::getParameterCount);
+    return new MethodSignature(executable.getDeclaringClass(), rType, pCount);
+  }
+
+  public static Class<?> getReturnType(Method method) {
+    return method.getReturnType() == void.class ? void.class : Object.class;
   }
 
   @Override
@@ -70,6 +97,7 @@ public class MethodSignature implements AbstractSignature {
     return "MethodSignature{" +
         "rType=" + rType +
         ", pCount=" + pCount +
+        ", declaringClass=" + declaringClass +
         '}';
   }
 
@@ -95,5 +123,13 @@ public class MethodSignature implements AbstractSignature {
   @Override
   public Class<?>[] getParameterTypes() {
     return new Class[0];
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Class<?> getDeclaringClass() {
+    return declaringClass;
   }
 }

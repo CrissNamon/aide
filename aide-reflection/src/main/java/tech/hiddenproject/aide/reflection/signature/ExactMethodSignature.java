@@ -1,8 +1,12 @@
 package tech.hiddenproject.aide.reflection.signature;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Objects;
+import tech.hiddenproject.aide.optional.IfTrueConditional;
+import tech.hiddenproject.aide.reflection.exception.ReflectionException;
 
 /**
  * Represents exact method signature. {@link ExactMethodSignature#equals(Object)} will check if
@@ -16,7 +20,10 @@ public class ExactMethodSignature implements AbstractSignature {
 
   private final Class<?>[] pType;
 
-  public ExactMethodSignature(Class<?> rType, Class<?>[] pType) {
+  private final Class<?> declaringClass;
+
+  public ExactMethodSignature(Class<?> declaringClass, Class<?> rType, Class<?>[] pType) {
+    this.declaringClass = declaringClass;
     this.rType = rType;
     this.pType = pType;
   }
@@ -29,17 +36,26 @@ public class ExactMethodSignature implements AbstractSignature {
    * @return Signature of method
    */
   public static ExactMethodSignature fromWrapper(Method method) {
-    return new ExactMethodSignature(method.getReturnType(), removeCaller(method));
+    return new ExactMethodSignature(
+        method.getDeclaringClass(), method.getReturnType(), removeCaller(method));
   }
 
   /**
    * Creates signature from any method.
    *
-   * @param method Method to create signature from
+   * @param executable {@link Executable} to create signature from (Method or constructor)
    * @return Signature of method
    */
-  public static ExactMethodSignature from(Method method) {
-    return new ExactMethodSignature(method.getReturnType(), method.getParameterTypes());
+  public static ExactMethodSignature from(Executable executable) {
+    Class<?> rType = IfTrueConditional.create()
+        .ifTrue(executable.getClass().equals(Method.class))
+        .then(() -> ((Method) executable).getReturnType())
+        .ifTrue(executable.getClass().equals(Constructor.class))
+        .then(Object.class)
+        .orElseThrows(() -> ReflectionException.format("Wrapping is supported for "
+                                                           + "constructors and methods only!"));
+    return new ExactMethodSignature(
+        executable.getDeclaringClass(), rType, executable.getParameterTypes());
   }
 
   private static Class<?>[] removeCaller(Method method) {
@@ -96,5 +112,13 @@ public class ExactMethodSignature implements AbstractSignature {
   @Override
   public Class<?>[] getParameterTypes() {
     return pType;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Class<?> getDeclaringClass() {
+    return declaringClass;
   }
 }

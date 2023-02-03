@@ -70,7 +70,7 @@ public class BooleanOptional implements GenericOptional<Boolean> {
    * If value is true then throws exception.
    *
    * @param throwableSupplier {@link Supplier} for {@link Throwable}
-   * @param <X> {@link Throwable} type
+   * @param <X>               {@link Throwable} type
    * @throws X if value is true
    */
   public <X extends Throwable> void ifTrueThrow(Supplier<X> throwableSupplier) throws X {
@@ -83,7 +83,7 @@ public class BooleanOptional implements GenericOptional<Boolean> {
    * If value is false then throws exception.
    *
    * @param throwableSupplier {@link Supplier} for {@link Throwable}
-   * @param <X> {@link Throwable} type
+   * @param <X>               {@link Throwable} type
    * @throws X if false is true
    */
   public <X extends Throwable> void ifFalseThrow(Supplier<X> throwableSupplier) throws X {

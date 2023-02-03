@@ -8,15 +8,15 @@
   <parent>
     <artifactId>aide</artifactId>
     <groupId>tech.hiddenproject</groupId>
-    <version>1.0</version>
+    <version>1.1</version>
   </parent>
-
-  <version>1.0</version>
 
   <properties>
     <maven.compiler.source>8</maven.compiler.source>
     <maven.compiler.target>8</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
+
+  <version>1.1</version>
 
 </project>

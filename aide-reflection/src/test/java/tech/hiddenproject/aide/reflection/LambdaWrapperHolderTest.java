@@ -9,13 +9,18 @@ import org.mockito.Mockito;
 import tech.hiddenproject.aide.reflection.annotation.ExactInvoker;
 import tech.hiddenproject.aide.reflection.annotation.Invoker;
 import tech.hiddenproject.aide.reflection.exception.ReflectionException;
+import tech.hiddenproject.aide.reflection.matcher.ArgumentMatcher;
+import tech.hiddenproject.aide.reflection.matcher.ArgumentMatcherHolder;
+import tech.hiddenproject.aide.reflection.signature.MatcherSignature;
+import tech.hiddenproject.aide.reflection.signature.MethodSignature;
+import tech.hiddenproject.aide.reflection.util.ReflectionUtil;
 
 /**
  * @author Danila Rassokhin
  */
 public class LambdaWrapperHolderTest {
 
-  private static final LambdaWrapperHolder holder = LambdaWrapperHolder.INSTANCE;
+  private static final LambdaWrapperHolder holder = LambdaWrapperHolder.EMPTY;
 
   @Test
   public void addInterfaceTest() {
@@ -36,9 +41,8 @@ public class LambdaWrapperHolderTest {
     TestClass caller = Mockito.mock(TestClass.class);
 
     Assertions.assertDoesNotThrow(() -> holder.add(wrapperMethod));
-
-    TestWrapper wrapper = holder.wrap(realMethod);
-    wrapper.action(caller);
+    WrapperHolder<TestWrapper> wrapper = holder.wrap(realMethod, TestWrapper.class);
+    wrapper.getWrapper().action(caller);
 
     Mockito.verify(caller).callAction();
     Mockito.verifyNoMoreInteractions(caller);
@@ -48,15 +52,16 @@ public class LambdaWrapperHolderTest {
   public void wrapMethodExactInvokerTest() {
     Method realMethod = ReflectionUtil.getMethod(TestClass.class, "callConvert", String.class);
     Method wrapperMethod = ReflectionUtil.getMethod(TestWrapper.class, "convert", Object.class,
-                                                    String.class);
+                                                    String.class
+    );
     TestClass caller = Mockito.mock(TestClass.class);
     Mockito.when(caller.callConvert(anyString()))
-            .thenReturn(2);
+        .thenReturn(2);
 
     Assertions.assertDoesNotThrow(() -> holder.add(wrapperMethod));
 
-    TestWrapper wrapper = holder.wrapExact(realMethod);
-    int expected = wrapper.convert(caller, "Hi");
+    WrapperHolder<TestWrapper> wrapper = holder.wrapExact(realMethod, TestWrapper.class);
+    int expected = wrapper.getWrapper().convert(caller, "Hi");
 
     Mockito.verify(caller).callConvert("Hi");
     Mockito.verifyNoMoreInteractions(caller);
@@ -68,7 +73,46 @@ public class LambdaWrapperHolderTest {
   public void wrapMethodNoWrapperTest() {
     Method realMethod = ReflectionUtil.getMethod(TestClass.class, "callNoWrapper");
 
-    Assertions.assertThrows(ReflectionException.class, () -> holder.wrapExact(realMethod));
+    Assertions.assertThrows(
+        RuntimeException.class, () -> holder.wrapExact(realMethod, TestWrapper.class));
+  }
+
+  @Test
+  public void wrapSafeTest() {
+    Method realMethod = ReflectionUtil.getMethod(TestClass.class, "callAction");
+    Method wrapperMethod = ReflectionUtil.getMethod(TestWrapper.class, "action", Object.class);
+    TestClass caller = Mockito.mock(TestClass.class);
+    Mockito.doNothing().when(caller).callAction();
+
+    Assertions.assertDoesNotThrow(() -> holder.add(wrapperMethod));
+    MethodSignature methodSignature = MethodSignature.fromWrapper(wrapperMethod);
+    MatcherSignature<TestWrapper> matcherSignature = new MatcherSignature<>(
+        TestWrapper.class, methodSignature);
+    Assertions.assertDoesNotThrow(() -> ArgumentMatcherHolder.INSTANCE.addMatcher(
+        matcherSignature, (holder1, original, args) -> ArgumentMatcher.voidable(
+            () -> holder1.getWrapper().action(args[0]))
+    ));
+
+    MethodHolder<TestWrapper, TestClass, Integer> wrapper = holder.wrapSafe(
+        realMethod, TestWrapper.class);
+    wrapper.invoke(caller);
+
+    Mockito.verify(caller).callAction();
+    Mockito.verifyNoMoreInteractions(caller);
+  }
+
+  public interface TestWrapper {
+
+    @Invoker
+    void action(Object caller);
+
+    @ExactInvoker
+    int convert(Object caller, String text);
+  }
+
+  public interface InvalidTestWrapper {
+
+    void invalid();
   }
 
   public static class TestClass {
@@ -82,20 +126,8 @@ public class LambdaWrapperHolderTest {
     }
 
     public int callNoWrapper() {
-     return 0;
+      return 0;
     }
 
-  }
-
-  public interface TestWrapper {
-    @Invoker
-    void action(Object caller);
-
-    @ExactInvoker
-    int convert(Object caller, String text);
-  }
-
-  public interface InvalidTestWrapper {
-    void invalid();
   }
 }

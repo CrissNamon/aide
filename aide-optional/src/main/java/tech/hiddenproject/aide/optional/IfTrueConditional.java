@@ -2,6 +2,7 @@ package tech.hiddenproject.aide.optional;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -66,7 +67,7 @@ public class IfTrueConditional<T> {
    * @return Result of conditional
    */
   public <D> D orElse(D defaultValue) {
-    return get().map(value -> (D) value).orElse(defaultValue);
+    return get().map(value -> (D) value.getValue().get()).orElse(defaultValue);
   }
 
   /**
@@ -77,7 +78,7 @@ public class IfTrueConditional<T> {
    * @return Result of conditional
    */
   public <D> D orElseGet(Supplier<D> defaultValue) {
-    return get().map(value -> (D) value).orElseGet(defaultValue);
+    return get().map(value -> (D) value.getValue().get()).orElseGet(defaultValue);
   }
 
   /**
@@ -90,15 +91,15 @@ public class IfTrueConditional<T> {
    * @throws X if all branches failed
    */
   public <X extends Throwable, D> D orElseThrows(Supplier<? extends X> exceptionSupplier) throws X {
-    return get().map(value -> (D) value).orElseThrow(exceptionSupplier);
+    return get().map(value -> (D) value.getValue().get()).orElseThrow(exceptionSupplier);
   }
 
   /**
    * @return Result of conditional as {@link Optional}
    */
-  private Optional<T> get() {
-    return conditions.entrySet().stream().filter(entry -> entry.getKey().test())
-        .map(entry -> entry.getValue().get())
+  private Optional<Entry<BooleanAction, Supplier<T>>> get() {
+    return conditions.entrySet().stream()
+        .filter(entry -> entry.getKey().test())
         .findFirst();
   }
 

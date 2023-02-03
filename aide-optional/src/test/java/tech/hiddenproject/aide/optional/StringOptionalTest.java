@@ -18,7 +18,8 @@ public class StringOptionalTest {
     StringOptional stringOptional = StringOptional.of("String");
 
     Assertions.assertEquals("String", stringOptional.ifPresentOrElse("Hello"));
-    Assertions.assertEquals("NewString", stringOptional.ifStartWithOrElse("NO_PREFIX", "NewString"));
+    Assertions.assertEquals(
+        "NewString", stringOptional.ifStartWithOrElse("NO_PREFIX", "NewString"));
   }
 
   @Test

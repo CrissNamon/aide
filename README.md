@@ -3,6 +3,7 @@
 [![Build](https://github.com/CrissNamon/aide/actions/workflows/maven.yml/badge.svg)](https://github.com/CrissNamon/aide/actions/workflows/maven.yml)
 
 Aide is a set of useful utils to simplify your code
+
 ## Content
 
 * Reflection
@@ -13,6 +14,7 @@ Aide is a set of useful utils to simplify your code
 ## Use
 
 Artifact ids:
+
 - all -> aide-all
 - reflection -> aide-reflection
 - optional -> aide-optional
@@ -23,14 +25,14 @@ Artifact ids:
 <dependency>
   <groupId>tech.hiddenproject</groupId>
   <artifactId>aide-all</artifactId>
-  <version>1.0</version>
+  <version>1.1</version>
 </dependency>
 ```
 
 ### Gradle
 
 ```groovy
-implementation 'tech:hiddenproject:aide-all:1.0'
+implementation 'tech:hiddenproject:aide-all:1.1'
 ```
 
 ## Resources
@@ -39,13 +41,14 @@ ___
 
 * Learn more at Aide [Wiki](https://github.com/CrissNamon/aide/wiki)
 * Look at some examples
-  in [example](https://github.com/CrissNamon/aide/tree/main/aide-all/src/main/java/tech/hiddenproject/aide/example) package
+  in [example](https://github.com/CrissNamon/aide/tree/main/aide-all/src/main/java/tech/hiddenproject/aide/example)
+  package
 
 ## Dependencies and source
 
 ___
 
-Aide has no dependencies and use only Java 8.</p> 
+Aide has no dependencies and use only Java 8.</p>
 
 ## Repository info
 
