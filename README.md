@@ -25,14 +25,14 @@ Artifact ids:
 <dependency>
   <groupId>tech.hiddenproject</groupId>
   <artifactId>aide-all</artifactId>
-  <version>1.0</version>
+  <version>1.1</version>
 </dependency>
 ```
 
 ### Gradle
 
 ```groovy
-implementation 'tech:hiddenproject:aide-all:1.0'
+implementation 'tech:hiddenproject:aide-all:1.1'
 ```
 
 ## Resources
