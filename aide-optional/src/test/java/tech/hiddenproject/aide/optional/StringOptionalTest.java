@@ -28,7 +28,11 @@ public class StringOptionalTest {
 
     String expected = "MyString";
     String actual = stringOptional.mapOnCondition(s -> true, v -> "My" + v).get();
-
+    ThrowableOptional.sneaky(() -> exceptional());
     Assertions.assertEquals(expected, actual);
+  }
+
+  public void exceptional() throws Throwable {
+
   }
 }

@@ -2,6 +2,7 @@ package tech.hiddenproject.aide.optional;
 
 import static org.mockito.ArgumentMatchers.any;
 
+import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.Assertions;
@@ -125,5 +126,22 @@ public class WhenConditionalTest {
     Mockito.verify(supplier, Mockito.times(1)).get();
 
     Mockito.verifyNoMoreInteractions(predicate1, predicate2, action1, action2, supplier);
+  }
+
+  @Test
+  public void whenTest() {
+
+    WhenConditional.create()
+        .when(false).then(WhenConditionalTest::action)
+        .when(new Object(), Objects::nonNull).then(() -> WhenConditionalTest.action())
+        .orDoNothing();
+
+  }
+
+  public static int id = 1;
+
+  public static void action() {
+    System.out.println("ACTION: " + id);
+    id++;
   }
 }

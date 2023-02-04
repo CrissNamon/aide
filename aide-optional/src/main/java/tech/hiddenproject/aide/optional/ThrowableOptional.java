@@ -10,12 +10,12 @@ import java.util.function.Function;
 public class ThrowableOptional {
 
   /**
-   * Executes {@link Action} and catches any Throwable, then converts Throwable to RuntimeException
+   * Executes {@link SneakyAction} and catches any Throwable, then converts Throwable to RuntimeException
    * and throws it. Can be used to work with checked exceptions in lambdas.
    *
-   * @param action {@link Action}
+   * @param action {@link SneakyAction}
    */
-  public static void sneaky(Action action) {
+  public static void sneaky(SneakyAction action) {
     try {
       action.make();
     } catch (Throwable throwable) {
@@ -24,14 +24,14 @@ public class ThrowableOptional {
   }
 
   /**
-   * Executes {@link Action}. Catches any Throwable if it will be thrown, then converts Throwable to
+   * Executes {@link SneakyAction}. Catches any Throwable if it will be thrown, then converts Throwable to
    * RuntimeException with given mapper function and throws it. Can be used to work with checked
    * exceptions in lambdas.
    *
-   * @param action {@link Action}
+   * @param action {@link SneakyAction}
    * @param mapper Mapper function to convert {@link Throwable} to {@link RuntimeException}
    */
-  public static void sneaky(Action action, Function<Throwable, ? extends RuntimeException> mapper) {
+  public static void sneaky(SneakyAction action, Function<Throwable, ? extends RuntimeException> mapper) {
     try {
       action.make();
     } catch (Throwable throwable) {
