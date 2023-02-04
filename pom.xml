@@ -3,7 +3,40 @@
   xmlns="http://maven.apache.org/POM/4.0.0"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <artifactId>aide</artifactId>
-
+  <profiles>
+    <profile>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+              </execution>
+            </executions>
+            <groupId>org.apache.maven.plugins</groupId>
+            <version>3.0.1</version>
+          </plugin>
+          <plugin>
+            <artifactId>nexus-staging-maven-plugin</artifactId>
+            <configuration>
+              <autoReleaseAfterClose>true</autoReleaseAfterClose>
+              <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
+              <serverId>ossrh</serverId>
+            </configuration>
+            <extensions>true</extensions>
+            <groupId>org.sonatype.plugins</groupId>
+            <version>1.6.13</version>
+          </plugin>
+        </plugins>
+      </build>
+      <id>deploy</id>
+    </profile>
+  </profiles>
   <build>
     <defaultGoal>package</defaultGoal>
     <plugins>
@@ -145,7 +178,14 @@
     <module>aide-optional</module>
     <module>aide-all</module>
   </modules>
+  <name>${project.groupId}:${project.artifactId}</name>
   <packaging>pom</packaging>
+  <scm>
+    <connection>scm:git:git:/github.com/CrissNamon/aide.git</connection>
+    <developerConnection>scm:git:ssh://github.com:CrissNamon/aide.git</developerConnection>
+    <url>https://github.com/CrissNamon/aide/tree/main</url>
+  </scm>
+  <url>https://github.com/CrissNamon/aide</url>
   <properties>
     <maven.compiler.source>8</maven.compiler.source>
     <maven.compiler.target>8</maven.compiler.target>

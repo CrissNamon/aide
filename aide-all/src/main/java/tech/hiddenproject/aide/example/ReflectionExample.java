@@ -9,6 +9,7 @@ import tech.hiddenproject.aide.reflection.LambdaWrapperHolder;
 import tech.hiddenproject.aide.reflection.MethodHolder;
 import tech.hiddenproject.aide.reflection.WrapperHolder;
 import tech.hiddenproject.aide.reflection.annotation.ExactInvoker;
+import tech.hiddenproject.aide.reflection.annotation.Invoker;
 import tech.hiddenproject.aide.reflection.matcher.ArgumentMatcherHolder;
 import tech.hiddenproject.aide.reflection.signature.LambdaMetadata;
 import tech.hiddenproject.aide.reflection.signature.MatcherSignature;
@@ -77,7 +78,7 @@ public class ReflectionExample {
     // Find constructor of TestClass
     Constructor<TestClass> constructorMethod = ReflectionUtil.getConstructor(TestClass.class);
     // Wrap constructor
-    MethodHolder<LambdaWrapper, ReflectionExample, TestClass> constructor =
+    MethodHolder<LambdaWrapper, Void, TestClass> constructor =
         lambdaWrapperHolder.wrapSafe(constructorMethod);
     // Call constructor
     caller = constructor.invokeStatic();
@@ -125,6 +126,9 @@ public class ReflectionExample {
 
     @ExactInvoker
     String exact(Object caller, int id);
+
+    @Invoker
+    Object get(Object caller);
   }
 
   public static class TestClass {
