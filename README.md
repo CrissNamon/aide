@@ -1,23 +1,69 @@
 ## About
 
 [![Build](https://github.com/CrissNamon/aide/actions/workflows/maven.yml/badge.svg)](https://github.com/CrissNamon/aide/actions/workflows/maven.yml)
+[![Releases](https://img.shields.io/github/v/release/crissnamon/aide?include_prereleases)](https://github.com/CrissNamon/aide/releases)
+[![Maven](https://maven-badges.herokuapp.com/maven-central/tech.hiddenproject/aide/badge.svg)](https://central.sonatype.com/artifact/tech.hiddenproject/aide/1.2)
 
-Aide is a set of useful utils to simplify your code
+Aide is a set of useful utils for fast reflection, extended optionals and conditionals. It can help you with development of some service or your own framework.
 
 ## Content
 
-* Reflection
-    - contains utils for reflection such as fast method invocation, annotation processing and other useful methods
-* Optional
-    - contains extended optional classes for String, Boolean types, IfTrue and When conditionals, Object utils
+#### Reflection
+
+Aide reflection contains utils for reflection such as fast method invocation with lambda wrapping, annotation processing and other useful methods.
+
+Reflective method calls with Aide are simple:
+
+```java
+// Get LambdaWrapperHolder isntance with default LambdaWrapper interface loaded
+LambdaWrapperHolder lambdaWrapperHolder = LambdaWrapperHolder.DEFAULT;
+// Find static method
+Method staticMethod = ReflectionUtil.getMethod(TestClass.class, "staticMethod", String.class);
+// Wrap static method
+// LambdaWrapper - default wrapper interface from Aide
+// Test class - caller class
+// Integer - return type
+MethodHolder<LambdaWrapper, TestClass, Integer> staticHolder = lambdaWrapperHolder.wrapSafe(staticMethod);
+// Invoke static method without caller
+int staticResult = staticHolder.invokeStatic("Hello");
+```
+
+#### Optional
+
+Aide optional contains extended optional classes for String, Boolean types, IfTrue and When conditionals, Object utils.
+
+Extended optionals provides new methods for some types:
+
+```java
+BooleanOptional.of(Modifier.isPublic(executable.getModifiers()))
+        .ifFalseThrow(() -> ReflectionException.format("Wrapping is supported for PUBLIC methods only!"));
+```
+
+With conditionals you can make your code more functional. Thats how Aide reflection uses them:
+
+```java
+AbstractSignature signature = IfTrueConditional.create()
+        .ifTrue(exact).then(() -> ExactMethodSignature.from(method))
+        .ifTrue(someObj, Objects::isNull).then(() -> new MethodSignature())
+        .orElseGet(() -> MethodSignature.from(method));
+```
+
+Or WhenConditional:
+
+```java
+WhenConditional.create()
+    .when(someObj, Objects::nonNull).then(MyClass::nonNull)
+    .when(someObj, Objects::isNull).then(MyClass::isNull)
+    .orDoNothing();
+```
 
 ## Use
 
 Artifact ids:
 
-- all -> aide-all
-- reflection -> aide-reflection
-- optional -> aide-optional
+- `tech.hiddenproject:aide-all` - all components
+- `tech.hiddenproject:aide-optional` - optionals and conditionals
+- `tech.hiddenproject:aide-reflection` - reflection utils
 
 ### Maven
 
@@ -25,14 +71,14 @@ Artifact ids:
 <dependency>
   <groupId>tech.hiddenproject</groupId>
   <artifactId>aide-all</artifactId>
-  <version>1.1</version>
+  <version>1.2</version>
 </dependency>
 ```
 
 ### Gradle
 
 ```groovy
-implementation 'tech:hiddenproject:aide-all:1.1'
+implementation 'tech:hiddenproject:aide-all:1.2'
 ```
 
 ## Resources
@@ -48,7 +94,7 @@ ___
 
 ___
 
-Aide has no dependencies and use only Java 8.</p>
+Aide has no dependencies and use only Java 8.
 
 ## Repository info
 
