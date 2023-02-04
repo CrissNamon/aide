@@ -7,12 +7,12 @@
     <dependency>
       <artifactId>aide-optional</artifactId>
       <groupId>tech.hiddenproject</groupId>
-      <version>1.1</version>
+      <version>1.2</version>
     </dependency>
     <dependency>
       <artifactId>aide-reflection</artifactId>
       <groupId>tech.hiddenproject</groupId>
-      <version>1.1</version>
+      <version>1.2</version>
     </dependency>
   </dependencies>
   <packaging>pom</packaging>
@@ -22,7 +22,7 @@
   <parent>
     <artifactId>aide</artifactId>
     <groupId>tech.hiddenproject</groupId>
-    <version>1.1</version>
+    <version>1.2</version>
   </parent>
 
   <properties>
