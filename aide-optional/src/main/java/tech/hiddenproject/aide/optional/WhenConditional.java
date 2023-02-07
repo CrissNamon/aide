@@ -93,9 +93,8 @@ public class WhenConditional {
   }
 
   private Optional<Entry<BooleanAction, Action>> get() {
-    return conditions.entrySet().stream()
-        .filter(entry -> entry.getKey().test())
-        .findFirst();
+    return conditions.entrySet()
+        .stream().filter(entry -> entry.getKey().test()).findFirst();
   }
 
   private WhenConditional add(Action action, BooleanAction booleanAction) {

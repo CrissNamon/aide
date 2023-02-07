@@ -2,11 +2,12 @@ package tech.hiddenproject.aide.optional;
 
 import static org.mockito.ArgumentMatchers.any;
 
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * @author Danila Rassokhin
@@ -28,15 +29,13 @@ public class BooleanOptionalTest {
     Mockito.doNothing().when(booleanAction).make();
     Mockito.when(throwableSupplier.get()).thenThrow(new RuntimeException());
 
-    BooleanOptional.of(true)
-        .ifTrueThen(booleanConsumer);
-    BooleanOptional.of(false)
-        .ifFalseThen(booleanAction);
+    BooleanOptional.of(true).ifTrueThen(booleanConsumer);
+    BooleanOptional.of(false).ifFalseThen(booleanAction);
 
-    Assertions.assertThrows(RuntimeException.class, () -> BooleanOptional.of(true)
-        .ifTrueThrow(throwableSupplier));
-    Assertions.assertThrows(RuntimeException.class, () -> BooleanOptional.of(false)
-        .ifFalseThrow(throwableSupplier));
+    Assertions.assertThrows(
+        RuntimeException.class, () -> BooleanOptional.of(true).ifTrueThrow(throwableSupplier));
+    Assertions.assertThrows(
+        RuntimeException.class, () -> BooleanOptional.of(false).ifFalseThrow(throwableSupplier));
 
     Mockito.verify(booleanConsumer).accept(any());
     Mockito.verify(booleanAction).make();

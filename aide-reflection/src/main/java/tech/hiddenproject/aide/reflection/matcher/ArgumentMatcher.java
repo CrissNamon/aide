@@ -1,8 +1,9 @@
 package tech.hiddenproject.aide.reflection.matcher;
 
-import java.lang.reflect.Executable;
 import tech.hiddenproject.aide.optional.Action;
 import tech.hiddenproject.aide.reflection.WrapperHolder;
+
+import java.lang.reflect.Executable;
 
 /**
  * Matches arguments from wrapper to original.

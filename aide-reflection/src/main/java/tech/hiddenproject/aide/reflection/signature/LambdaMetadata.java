@@ -1,8 +1,9 @@
 package tech.hiddenproject.aide.reflection.signature;
 
+import tech.hiddenproject.aide.reflection.LambdaWrapperHolder;
+
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
-import tech.hiddenproject.aide.reflection.LambdaWrapperHolder;
 
 /**
  * Stores metadata of wrapper function for {@link LambdaWrapperHolder}.
@@ -46,10 +47,8 @@ public class LambdaMetadata {
 
   @Override
   public String toString() {
-    return "LambdaMetadata{" +
-        "methodName='" + methodName + '\'' +
-        ", factory=" + declaringInterfaceType +
-        ", methodType=" + methodType +
-        '}';
+    return "LambdaMetadata{" + "methodName='" + methodName + '\'' + ", factory="
+        + declaringInterfaceType +
+        ", methodType=" + methodType + '}';
   }
 }

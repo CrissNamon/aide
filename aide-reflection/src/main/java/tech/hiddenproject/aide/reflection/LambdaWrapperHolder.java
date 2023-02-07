@@ -1,5 +1,18 @@
 package tech.hiddenproject.aide.reflection;
 
+import tech.hiddenproject.aide.optional.BooleanOptional;
+import tech.hiddenproject.aide.optional.IfTrueConditional;
+import tech.hiddenproject.aide.optional.ObjectUtils;
+import tech.hiddenproject.aide.optional.ThrowableOptional;
+import tech.hiddenproject.aide.reflection.annotation.ExactInvoker;
+import tech.hiddenproject.aide.reflection.annotation.Invoker;
+import tech.hiddenproject.aide.reflection.exception.ReflectionException;
+import tech.hiddenproject.aide.reflection.filter.ExecutableFilter;
+import tech.hiddenproject.aide.reflection.signature.AbstractSignature;
+import tech.hiddenproject.aide.reflection.signature.ExactMethodSignature;
+import tech.hiddenproject.aide.reflection.signature.LambdaMetadata;
+import tech.hiddenproject.aide.reflection.signature.MethodSignature;
+
 import java.lang.invoke.CallSite;
 import java.lang.invoke.LambdaMetafactory;
 import java.lang.invoke.MethodHandle;
@@ -16,17 +29,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import tech.hiddenproject.aide.optional.BooleanOptional;
-import tech.hiddenproject.aide.optional.IfTrueConditional;
-import tech.hiddenproject.aide.optional.ObjectUtils;
-import tech.hiddenproject.aide.optional.ThrowableOptional;
-import tech.hiddenproject.aide.reflection.annotation.ExactInvoker;
-import tech.hiddenproject.aide.reflection.annotation.Invoker;
-import tech.hiddenproject.aide.reflection.exception.ReflectionException;
-import tech.hiddenproject.aide.reflection.signature.AbstractSignature;
-import tech.hiddenproject.aide.reflection.signature.ExactMethodSignature;
-import tech.hiddenproject.aide.reflection.signature.LambdaMetadata;
-import tech.hiddenproject.aide.reflection.signature.MethodSignature;
 
 /**
  * Stores all wrapper signatures and wraps method into them. Uses {@link LambdaMetafactory} to wrap
@@ -44,11 +46,24 @@ public enum LambdaWrapperHolder {
   private final Map<Class<?>, Map<AbstractSignature, LambdaMetadata>> invokers = new HashMap<>();
   private final Map<Class<?>, Map<AbstractSignature, LambdaMetadata>> exactInvokers = new HashMap<>();
 
+  private ExecutableFilter filter = ExecutableFilter.PUBLIC_ONLY;
+
   LambdaWrapperHolder() {
   }
 
   LambdaWrapperHolder(Class<?> interfaceClass) {
     add(interfaceClass);
+  }
+
+  /**
+   * Sets new {@link ExecutableFilter} to check if {@link Executable} can be wrapped. See
+   * {@link tech.hiddenproject.aide.reflection.filter.PublicOnlyFilter} and
+   * {@link tech.hiddenproject.aide.reflection.filter.AnyFilter}.
+   *
+   * @param filter {@link ExecutableFilter}
+   */
+  public void setFilter(ExecutableFilter filter) {
+    this.filter = filter;
   }
 
   /**
@@ -58,11 +73,11 @@ public enum LambdaWrapperHolder {
    */
   public void add(Class<?> declaringInterface) {
     BooleanOptional.of(declaringInterface.isInterface())
-        .ifFalseThrow(
-            () -> ReflectionException.format("Class %s must be an interface", declaringInterface));
+        .ifFalseThrow(() -> ReflectionException.format("Class %s must be an interface",
+                                                       declaringInterface
+        ));
 
-    Arrays.stream(declaringInterface.getDeclaredMethods())
-        .forEach(this::add);
+    Arrays.stream(declaringInterface.getDeclaredMethods()).forEach(this::add);
   }
 
   /**
@@ -83,8 +98,8 @@ public enum LambdaWrapperHolder {
    */
   public void addMethod(Method m) {
     BooleanOptional.of(checkAnnotations(m))
-        .ifFalseThrow(() -> ReflectionException.format("Method %s must be annotated as @Invoker "
-                                                           + "or @ExactInvoker", m));
+        .ifFalseThrow(() -> ReflectionException.format(
+            "Method %s must be annotated as @Invoker " + "or @ExactInvoker", m));
     Invoker invoker = m.getAnnotation(Invoker.class);
     ExactInvoker exactInvoker = m.getAnnotation(ExactInvoker.class);
     BooleanOptional.of(Objects.nonNull(invoker)).ifTrueThen(v -> addInvoker(m));
@@ -112,13 +127,17 @@ public enum LambdaWrapperHolder {
     List<LambdaMetadata> metadata = new ArrayList<>();
     MethodSignature methodSignature = MethodSignature.from(executable);
     ExactMethodSignature exactMethodSignature = ExactMethodSignature.from(executable);
-    metadata.addAll(invokers.values().stream()
-                        .flatMap(map -> map.entrySet().stream())
+    metadata.addAll(invokers.values()
+                        .stream()
+                        .flatMap(map -> map.entrySet()
+                            .stream())
                         .filter(entry -> entry.getKey().equals(methodSignature))
                         .map(Entry::getValue)
                         .collect(Collectors.toList()));
-    metadata.addAll(exactInvokers.values().stream()
-                        .flatMap(map -> map.entrySet().stream())
+    metadata.addAll(exactInvokers.values()
+                        .stream()
+                        .flatMap(map -> map.entrySet()
+                            .stream())
                         .filter(entry -> entry.getKey().equals(exactMethodSignature))
                         .map(Entry::getValue)
                         .collect(Collectors.toList()));
@@ -238,9 +257,8 @@ public enum LambdaWrapperHolder {
 
   private <F> WrapperHolder<F> createWrapper(boolean exact, Executable executable,
                                              Class<?> interfaceClass) {
-    BooleanOptional.of(Modifier.isPublic(executable.getModifiers()))
-        .ifFalseThrow(() -> ReflectionException.format("Wrapping is supported for "
-                                                           + "PUBLIC methods only!"));
+    BooleanOptional.of(filter.filter(executable))
+        .ifFalseThrow(() -> filter.getException());
     return new WrapperHolder<>(
         ThrowableOptional.sneaky(
             () -> (F) createCallSite(executable, exact, interfaceClass).getTarget().invoke()),
@@ -253,9 +271,8 @@ public enum LambdaWrapperHolder {
   }
 
   private <F> WrapperHolder<F> createWrapper(Executable executable, LambdaMetadata lambdaMetadata) {
-    BooleanOptional.of(Modifier.isPublic(executable.getModifiers()))
-        .ifFalseThrow(() -> ReflectionException.format("Wrapping is supported for "
-                                                           + "PUBLIC methods only!"));
+    BooleanOptional.of(filter.filter(executable))
+        .ifFalseThrow(() -> filter.getException());
     return new WrapperHolder<>(
         ThrowableOptional.sneaky(
             () -> (F) createCallSite(executable, lambdaMetadata).getTarget().invoke()),
@@ -278,8 +295,8 @@ public enum LambdaWrapperHolder {
   }
 
   private boolean checkAnnotations(Method method) {
-    return method.isAnnotationPresent(Invoker.class)
-        || method.isAnnotationPresent(ExactInvoker.class);
+    return method.isAnnotationPresent(Invoker.class) || method.isAnnotationPresent(
+        ExactInvoker.class);
   }
 
   private CallSite createCallSite(Executable executable, boolean exact, Class<?> interfaceClass)
@@ -290,13 +307,15 @@ public enum LambdaWrapperHolder {
 
   private CallSite createCallSite(Executable executable, LambdaMetadata lambdaMetadata)
       throws Exception {
-    MethodHandle methodHandle = IfTrueConditional.create()
-        .ifTrue(ObjectUtils.isInstanceOf(executable, Constructor.class))
-        .then(() -> unreflect((Constructor<?>) executable))
-        .ifTrue(ObjectUtils.isInstanceOf(executable, Method.class))
-        .then(() -> unreflect((Method) executable))
-        .orElseThrows(() -> ReflectionException.format("Wrapping is supported for constructors "
-                                                           + "and methods only!"));
+    MethodHandle methodHandle =
+        IfTrueConditional.create()
+            .ifTrue(ObjectUtils.isInstanceOf(executable, Constructor.class))
+            .then(() -> unreflect((Constructor<?>) executable))
+            .ifTrue(ObjectUtils.isInstanceOf(executable, Method.class))
+            .then(() -> unreflect((Method) executable))
+            .orElseThrows(
+                () -> ReflectionException.format(
+                    "Wrapping is supported for constructors and methods only!"));
     return LambdaMetafactory.metafactory(lookup, lambdaMetadata.getMethodName(),
                                          lambdaMetadata.getDeclaringInterfaceType(),
                                          lambdaMetadata.getMethodType(),
@@ -313,12 +332,14 @@ public enum LambdaWrapperHolder {
   }
 
   private LambdaMetadata getMetadata(Executable method, boolean exact, Class<?> interfaceClass) {
-    AbstractSignature signature = IfTrueConditional.create()
-        .ifTrue(exact).then(() -> ExactMethodSignature.from(method))
-        .orElseGet(() -> MethodSignature.from(method));
-    Map<Class<?>, Map<AbstractSignature, LambdaMetadata>> container = IfTrueConditional.create()
-        .ifTrue(exact).then(exactInvokers)
-        .orElse(invokers);
+    AbstractSignature signature =
+        IfTrueConditional.create()
+            .ifTrue(exact).then(() -> ExactMethodSignature.from(method))
+            .orElseGet(() -> MethodSignature.from(method));
+    Map<Class<?>, Map<AbstractSignature, LambdaMetadata>> container =
+        IfTrueConditional.create()
+            .ifTrue(exact).then(exactInvokers)
+            .orElse(invokers);
     if (!container.containsKey(interfaceClass)) {
       throw ReflectionException.format("No wrappers with type %s", interfaceClass);
     }

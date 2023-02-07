@@ -33,11 +33,9 @@ public class AnnotationUtil {
    */
   @SuppressWarnings("unchecked")
   public static <A extends Annotation> A findAnnotation(Class<?> clazz, Class<A> annotationType) {
-    if (clazz.equals(Target.class)
-        || clazz.equals(Documented.class)
-        || clazz.equals(Retention.class)
-        || clazz.equals(Inherited.class)
-        || clazz.equals(Deprecated.class)) {
+    if (clazz.equals(Target.class) || clazz.equals(Documented.class) || clazz.equals(
+        Retention.class) ||
+        clazz.equals(Inherited.class) || clazz.equals(Deprecated.class)) {
       return null;
     }
     Annotation[] anns = clazz.getDeclaredAnnotations();

@@ -2,18 +2,20 @@ package tech.hiddenproject.aide.reflection;
 
 import static org.mockito.ArgumentMatchers.anyString;
 
-import java.lang.reflect.Method;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import tech.hiddenproject.aide.reflection.annotation.ExactInvoker;
 import tech.hiddenproject.aide.reflection.annotation.Invoker;
 import tech.hiddenproject.aide.reflection.exception.ReflectionException;
+import tech.hiddenproject.aide.reflection.filter.ExecutableFilter;
 import tech.hiddenproject.aide.reflection.matcher.ArgumentMatcher;
 import tech.hiddenproject.aide.reflection.matcher.ArgumentMatcherHolder;
 import tech.hiddenproject.aide.reflection.signature.MatcherSignature;
 import tech.hiddenproject.aide.reflection.signature.MethodSignature;
 import tech.hiddenproject.aide.reflection.util.ReflectionUtil;
+
+import java.lang.reflect.Method;
 
 /**
  * @author Danila Rassokhin
@@ -51,12 +53,10 @@ public class LambdaWrapperHolderTest {
   @Test
   public void wrapMethodExactInvokerTest() {
     Method realMethod = ReflectionUtil.getMethod(TestClass.class, "callConvert", String.class);
-    Method wrapperMethod = ReflectionUtil.getMethod(TestWrapper.class, "convert", Object.class,
-                                                    String.class
-    );
+    Method wrapperMethod = ReflectionUtil.getMethod(
+        TestWrapper.class, "convert", Object.class, String.class);
     TestClass caller = Mockito.mock(TestClass.class);
-    Mockito.when(caller.callConvert(anyString()))
-        .thenReturn(2);
+    Mockito.when(caller.callConvert(anyString())).thenReturn(2);
 
     Assertions.assertDoesNotThrow(() -> holder.add(wrapperMethod));
 
@@ -89,8 +89,10 @@ public class LambdaWrapperHolderTest {
     MatcherSignature<TestWrapper> matcherSignature = new MatcherSignature<>(
         TestWrapper.class, methodSignature);
     Assertions.assertDoesNotThrow(() -> ArgumentMatcherHolder.INSTANCE.addMatcher(
-        matcherSignature, (holder1, original, args) -> ArgumentMatcher.voidable(
-            () -> holder1.getWrapper().action(args[0]))
+        matcherSignature,
+        (holder1, original, args) -> ArgumentMatcher.voidable(
+            () -> holder1.getWrapper()
+                         .action(args[0]))
     ));
 
     MethodHolder<TestWrapper, TestClass, Integer> wrapper = holder.wrapSafe(
@@ -99,6 +101,21 @@ public class LambdaWrapperHolderTest {
 
     Mockito.verify(caller).callAction();
     Mockito.verifyNoMoreInteractions(caller);
+  }
+
+  @Test
+  public void publicFilterTest() {
+    holder.setFilter(ExecutableFilter.PUBLIC_ONLY);
+    Method privateMethod = ReflectionUtil.getMethod(TestClass.class, "privateMethod");
+    Assertions.assertThrows(ReflectionException.class, () -> holder.wrapSafe(privateMethod));
+  }
+
+  @Test
+  public void anyFilterTest() {
+    LambdaWrapperHolder lambdaWrapperHolder = LambdaWrapperHolder.DEFAULT;
+    lambdaWrapperHolder.setFilter(ExecutableFilter.ANY);
+    Method privateMethod = ReflectionUtil.getMethod(TestClass.class, "privateMethod");
+    Assertions.assertThrows(RuntimeException.class, () -> lambdaWrapperHolder.wrapSafe(privateMethod));
   }
 
   public interface TestWrapper {
@@ -128,6 +145,8 @@ public class LambdaWrapperHolderTest {
     public int callNoWrapper() {
       return 0;
     }
+
+    private void privateMethod() {}
 
   }
 }

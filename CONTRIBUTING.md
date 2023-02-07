@@ -12,7 +12,8 @@ Please note we have a code of conduct, please follow it in all your interactions
 3. make a pull request.
 
 > `NOTE:` Always remember to describe you PR with the exact issue id.
-OR if you are making PR which doesn't solves any listed issue then please mention it(*this PR doesn't resembles with any listed issue*) into your PR
+> OR if you are making PR which doesn't solves any listed issue then please mention it(*this PR doesn't resembles with 
+> any listed issue*) into your PR
 
 ## Code of Conduct
 

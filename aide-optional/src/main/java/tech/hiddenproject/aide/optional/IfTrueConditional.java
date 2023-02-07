@@ -98,9 +98,8 @@ public class IfTrueConditional<T> {
    * @return Result of conditional as {@link Optional}
    */
   private Optional<Entry<BooleanAction, Supplier<T>>> get() {
-    return conditions.entrySet().stream()
-        .filter(entry -> entry.getKey().test())
-        .findFirst();
+    return conditions.entrySet()
+        .stream().filter(entry -> entry.getKey().test()).findFirst();
   }
 
   private IfTrueConditional<T> add(Supplier<T> supplier, BooleanAction booleanAction) {

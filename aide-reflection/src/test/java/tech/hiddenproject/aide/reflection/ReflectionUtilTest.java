@@ -1,9 +1,10 @@
 package tech.hiddenproject.aide.reflection;
 
-import java.lang.reflect.Method;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import tech.hiddenproject.aide.reflection.util.ReflectionUtil;
+
+import java.lang.reflect.Method;
 
 /**
  * @author Danila Rassokhin

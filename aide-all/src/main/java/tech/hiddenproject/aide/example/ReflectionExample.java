@@ -1,9 +1,5 @@
 package tech.hiddenproject.aide.example;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.stream.Collectors;
 import tech.hiddenproject.aide.reflection.LambdaWrapper;
 import tech.hiddenproject.aide.reflection.LambdaWrapperHolder;
 import tech.hiddenproject.aide.reflection.MethodHolder;
@@ -16,11 +12,15 @@ import tech.hiddenproject.aide.reflection.signature.MatcherSignature;
 import tech.hiddenproject.aide.reflection.signature.MethodSignature;
 import tech.hiddenproject.aide.reflection.util.ReflectionUtil;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 /**
  * @author Danila Rassokhin
  */
 public class ReflectionExample {
-
 
   public ReflectionExample() {
     // Create holder with default LambdaWrapper initialization
@@ -78,8 +78,8 @@ public class ReflectionExample {
     // Find constructor of TestClass
     Constructor<TestClass> constructorMethod = ReflectionUtil.getConstructor(TestClass.class);
     // Wrap constructor
-    MethodHolder<LambdaWrapper, Void, TestClass> constructor =
-        lambdaWrapperHolder.wrapSafe(constructorMethod);
+    MethodHolder<LambdaWrapper, Void, TestClass> constructor = lambdaWrapperHolder.wrapSafe(
+        constructorMethod);
     // Call constructor
     caller = constructor.invokeStatic();
 
@@ -98,7 +98,7 @@ public class ReflectionExample {
     // Find static method
     Method staticMethod = ReflectionUtil.getMethod(TestClass.class, "staticMethod", String.class);
     // Wrap static method
-    MethodHolder<LambdaWrapper, TestClass, Integer> staticHolder = lambdaWrapperHolder.wrapSafe(
+    MethodHolder<LambdaWrapper, Void, Integer> staticHolder = lambdaWrapperHolder.wrapSafe(
         staticMethod);
     // Invoke static method without caller
     int staticResult = staticHolder.invokeStatic("Hello");
@@ -109,15 +109,15 @@ public class ReflectionExample {
         TestInterface.class, "exact", Object.class, int.class);
     LambdaMetadata testWrapper = LambdaMetadata.from(testMethod);
     // Wrap special method with your own lambda metadata
-    MethodHolder<TestInterface, TestClass, String> testHolder = lambdaWrapperHolder.wrapSafe(
-        specialMethod, testWrapper);
+    MethodHolder<TestInterface, TestClass, String> testHolder =
+        lambdaWrapperHolder.wrapSafe(specialMethod, testWrapper);
     // Create new ArgumentMatcher for wrapper
     MethodSignature methodSignature = MethodSignature.fromWrapper(testMethod);
     MatcherSignature<TestInterface> matcherSignature = new MatcherSignature<>(
         TestInterface.class, methodSignature);
     ArgumentMatcherHolder.INSTANCE.addMatcher(
         matcherSignature, (holder, original, args) -> holder.getWrapper()
-            .exact(args[0], (int) args[1]));
+                                                            .exact(args[0], (int) args[1]));
     // Invoke special method with custom argument matcher
     testHolder.invoke(caller, 1);
   }
@@ -163,7 +163,7 @@ public class ReflectionExample {
 
     public Class<?>[] varargs(Object... args) {
       return Arrays.stream(args).map(Object::getClass).collect(Collectors.toList())
-          .toArray(new Class[]{});
+                                .toArray(new Class[]{});
     }
   }
 }

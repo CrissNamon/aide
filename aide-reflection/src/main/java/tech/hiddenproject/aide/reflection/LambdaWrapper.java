@@ -1,8 +1,9 @@
 package tech.hiddenproject.aide.reflection;
 
-import java.lang.reflect.Method;
 import tech.hiddenproject.aide.reflection.annotation.Invoker;
 import tech.hiddenproject.aide.reflection.util.ReflectionUtil;
+
+import java.lang.reflect.Method;
 
 /**
  * Basic wrapper functions for {@link LambdaWrapperHolder}. Will be loaded on
@@ -136,20 +137,31 @@ public interface LambdaWrapper {
                                                                  Object.class
     );
     private static final String SETTER_NAME = "set";
-    public static final Method SETTER =
-        ReflectionUtil.getMethod(LambdaWrapper.class, SETTER_NAME, Object.class, 2);
+    public static final Method SETTER = ReflectionUtil.getMethod(LambdaWrapper.class, SETTER_NAME,
+                                                                 Object.class, 2
+    );
     public static final Method CONSUMER_ARGS_1 = SETTER;
     private static final String CONSUMER_NAME = "accept";
-    public static final Method CONSUMER_ARGS_2 =
-        ReflectionUtil.getMethod(LambdaWrapper.class, CONSUMER_NAME, Object.class, 3);
-    public static final Method CONSUMER_ARGS_3 =
-        ReflectionUtil.getMethod(LambdaWrapper.class, CONSUMER_NAME, Object.class, 4);
-    public static final Method CONSUMER_ARGS_4 =
-        ReflectionUtil.getMethod(LambdaWrapper.class, CONSUMER_NAME, Object.class, 5);
-    public static final Method CONSUMER_ARGS_5 =
-        ReflectionUtil.getMethod(LambdaWrapper.class, CONSUMER_NAME, Object.class, 6);
-    public static final Method CONSUMER_ARGS_6 =
-        ReflectionUtil.getMethod(LambdaWrapper.class, CONSUMER_NAME, Object.class, 7);
+    public static final Method CONSUMER_ARGS_2 = ReflectionUtil.getMethod(LambdaWrapper.class,
+                                                                          CONSUMER_NAME,
+                                                                          Object.class, 3
+    );
+    public static final Method CONSUMER_ARGS_3 = ReflectionUtil.getMethod(LambdaWrapper.class,
+                                                                          CONSUMER_NAME,
+                                                                          Object.class, 4
+    );
+    public static final Method CONSUMER_ARGS_4 = ReflectionUtil.getMethod(LambdaWrapper.class,
+                                                                          CONSUMER_NAME,
+                                                                          Object.class, 5
+    );
+    public static final Method CONSUMER_ARGS_5 = ReflectionUtil.getMethod(LambdaWrapper.class,
+                                                                          CONSUMER_NAME,
+                                                                          Object.class, 6
+    );
+    public static final Method CONSUMER_ARGS_6 = ReflectionUtil.getMethod(LambdaWrapper.class,
+                                                                          CONSUMER_NAME,
+                                                                          Object.class, 7
+    );
     private static final String FUNCTION_NAME = "apply";
     public static final Method FUNCTION_ARGS_1 = ReflectionUtil.getMethod(LambdaWrapper.class,
                                                                           FUNCTION_NAME,
@@ -180,9 +192,8 @@ public interface LambdaWrapper {
                                                                  Object.class
     );
     private static final String CONSTRUCT_NAME = "construct";
-    public static final Method CONSTRUCT = ReflectionUtil.getMethod(
-        LambdaWrapper.class,
-        CONSTRUCT_NAME
+    public static final Method CONSTRUCT = ReflectionUtil.getMethod(LambdaWrapper.class,
+                                                                    CONSTRUCT_NAME
     );
     private static final String INVOKE_NAME = "invoke";
     public static final Method INVOKE = ReflectionUtil.getMethod(LambdaWrapper.class, INVOKE_NAME);
@@ -191,13 +202,11 @@ public interface LambdaWrapper {
      * @return All wrappers from {@link LambdaWrapper}
      */
     public static Method[] get() {
-      return new Method[]{
-          Factory.ACTION, Factory.GETTER, Factory.SETTER,
-          Factory.CONSUMER_ARGS_2, Factory.CONSUMER_ARGS_3, Factory.CONSUMER_ARGS_4,
-          Factory.CONSUMER_ARGS_5, Factory.CONSUMER_ARGS_6, Factory.FUNCTION_ARGS_1,
-          Factory.FUNCTION_ARGS_2, Factory.FUNCTION_ARGS_3, Factory.FUNCTION_ARGS_4,
-          Factory.FUNCTION_ARGS_5, Factory.FUNCTION_ARGS_6, CONSTRUCT, INVOKE
-      };
+      return new Method[]{Factory.ACTION, Factory.GETTER, Factory.SETTER, Factory.CONSUMER_ARGS_2,
+          Factory.CONSUMER_ARGS_3, Factory.CONSUMER_ARGS_4, Factory.CONSUMER_ARGS_5,
+          Factory.CONSUMER_ARGS_6, Factory.FUNCTION_ARGS_1, Factory.FUNCTION_ARGS_2,
+          Factory.FUNCTION_ARGS_3, Factory.FUNCTION_ARGS_4, Factory.FUNCTION_ARGS_5,
+          Factory.FUNCTION_ARGS_6, CONSTRUCT, INVOKE};
     }
   }
 }
