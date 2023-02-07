@@ -98,7 +98,7 @@ Artifact ids:
 ### Gradle
 
 ```groovy
-implementation 'tech:hiddenproject:aide-all:1.2'
+implementation 'tech:hiddenproject:aide-all:1.3'
 ```
 
 ## Resources
