@@ -18,9 +18,7 @@ public class ObjectUtils {
    * @return true if null objects count is greater than maxCount
    */
   public static boolean isMoreThanNull(int maxCount, Object... objects) {
-    return Arrays.stream(objects)
-        .filter(Objects::nonNull)
-        .count() > maxCount;
+    return Arrays.stream(objects).filter(Objects::nonNull).count() > maxCount;
   }
 
   /**

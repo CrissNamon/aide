@@ -1,12 +1,13 @@
 package tech.hiddenproject.aide.reflection.signature;
 
+import tech.hiddenproject.aide.optional.IfTrueConditional;
+import tech.hiddenproject.aide.reflection.exception.ReflectionException;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Objects;
-import tech.hiddenproject.aide.optional.IfTrueConditional;
-import tech.hiddenproject.aide.reflection.exception.ReflectionException;
 
 /**
  * Represents exact method signature. {@link ExactMethodSignature#equals(Object)} will check if
@@ -47,13 +48,13 @@ public class ExactMethodSignature implements AbstractSignature {
    * @return Signature of method
    */
   public static ExactMethodSignature from(Executable executable) {
-    Class<?> rType = IfTrueConditional.create()
-        .ifTrue(executable.getClass().equals(Method.class))
-        .then(() -> ((Method) executable).getReturnType())
-        .ifTrue(executable.getClass().equals(Constructor.class))
-        .then(Object.class)
-        .orElseThrows(() -> ReflectionException.format("Wrapping is supported for "
-                                                           + "constructors and methods only!"));
+    Class<?> rType = IfTrueConditional.create().ifTrue(executable.getClass().equals(Method.class))
+                                               .then(() -> ((Method) executable).getReturnType())
+                                               .ifTrue(
+                                                   executable.getClass().equals(Constructor.class))
+                                               .then(Object.class).orElseThrows(
+            () -> ReflectionException.format(
+                "Wrapping is supported for " + "constructors and methods only!"));
     return new ExactMethodSignature(
         executable.getDeclaringClass(), rType, executable.getParameterTypes());
   }
@@ -84,10 +85,7 @@ public class ExactMethodSignature implements AbstractSignature {
 
   @Override
   public String toString() {
-    return "ExactMethodSignature{" +
-        "rType=" + rType +
-        ", pType=" + Arrays.toString(pType) +
-        '}';
+    return "ExactMethodSignature{" + "rType=" + rType + ", pType=" + Arrays.toString(pType) + '}';
   }
 
   /**

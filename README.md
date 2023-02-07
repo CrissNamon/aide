@@ -4,13 +4,15 @@
 [![Releases](https://img.shields.io/github/v/release/crissnamon/aide?include_prereleases)](https://github.com/CrissNamon/aide/releases)
 [![Maven](https://maven-badges.herokuapp.com/maven-central/tech.hiddenproject/aide/badge.svg)](https://central.sonatype.com/artifact/tech.hiddenproject/aide/1.2)
 
-Aide is a set of useful utils for fast reflection, extended optionals and conditionals. It can help you with development of some service or your own framework.
+Aide is a set of useful utils for fast reflection, extended optionals and conditionals. It can help you with development
+of some service or your own framework.
 
 ## Content
 
 #### Reflection
 
-Aide reflection contains utils for reflection such as fast method invocation with lambda wrapping, annotation processing and other useful methods.
+Aide reflection contains utils for reflection such as fast method invocation with lambda wrapping, annotation processing
+and other useful methods.
 
 Reflective method calls with Aide are simple:
 
@@ -21,9 +23,9 @@ LambdaWrapperHolder lambdaWrapperHolder = LambdaWrapperHolder.DEFAULT;
 Method staticMethod = ReflectionUtil.getMethod(TestClass.class, "staticMethod", String.class);
 // Wrap static method
 // LambdaWrapper - default wrapper interface from Aide
-// Test class - caller class
+// Void - caller class. In case of static method caller is not needed, so Void
 // Integer - return type
-MethodHolder<LambdaWrapper, TestClass, Integer> staticHolder = lambdaWrapperHolder.wrapSafe(staticMethod);
+MethodHolder<LambdaWrapper, Void, Integer> staticHolder = lambdaWrapperHolder.wrapSafe(staticMethod);
 // Invoke static method without caller
 int staticResult = staticHolder.invokeStatic("Hello");
 ```
@@ -36,16 +38,16 @@ Extended optionals provides new methods for some types:
 
 ```java
 BooleanOptional.of(Modifier.isPublic(executable.getModifiers()))
-        .ifFalseThrow(() -> ReflectionException.format("Wrapping is supported for PUBLIC methods only!"));
+    .ifFalseThrow(() -> ReflectionException.format("Wrapping is supported for PUBLIC methods only!"));
 ```
 
 With conditionals you can make your code more functional. Thats how Aide reflection uses them:
 
 ```java
 AbstractSignature signature = IfTrueConditional.create()
-        .ifTrue(exact).then(() -> ExactMethodSignature.from(method))
-        .ifTrue(someObj, Objects::isNull).then(() -> new MethodSignature())
-        .orElseGet(() -> MethodSignature.from(method));
+    .ifTrue(exact).then(() -> ExactMethodSignature.from(method))
+    .ifTrue(!exact).then(() -> MethodSignature.from(method))
+    .orElseThrow(() -> ReflectionException.format("%s undefined!", exact));
 ```
 
 Or WhenConditional:
@@ -55,6 +57,23 @@ WhenConditional.create()
     .when(someObj, Objects::nonNull).then(MyClass::nonNull)
     .when(someObj, Objects::isNull).then(MyClass::isNull)
     .orDoNothing();
+```
+
+SwitchConditional too:
+```java
+Status status = Status.BAD_REQUEST;
+String message = SwitchConditional.<Status, String>on(status)
+  .caseOn(Status.BAD_REQUEST::equals).thenGet("Error: Bad request")
+  .caseOn(Status.INTERNAL_ERROR::equals).thenGet("Error: Internal error")
+  .orElse("");
+    
+assert message.equals("Error: Bad request");
+    
+SwitchConditional.on(status)
+  // false = no break;, so all branches below will be executed
+  .caseOn(Status.BAD_REQUEST::equals, false).thenDo(this::action)
+  .caseOn(Status.INTERNAL_ERROR::equals).thenDo(this::action)
+  .orElseDo(() -> System.out.println("No action"));
 ```
 
 ## Use
@@ -68,10 +87,11 @@ Artifact ids:
 ### Maven
 
 ```xml
+
 <dependency>
   <groupId>tech.hiddenproject</groupId>
   <artifactId>aide-all</artifactId>
-  <version>1.2</version>
+  <version>1.3</version>
 </dependency>
 ```
 

@@ -45,9 +45,7 @@ public class MatcherSignature<W> {
 
   @Override
   public String toString() {
-    return "MatcherSignature{" +
-        "declaringClass=" + declaringClass +
-        ", methodSignature=" + methodSignature +
-        '}';
+    return "MatcherSignature{" + "declaringClass=" + declaringClass + ", methodSignature="
+        + methodSignature + '}';
   }
 }

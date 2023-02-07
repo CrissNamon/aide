@@ -1,13 +1,14 @@
 package tech.hiddenproject.aide.reflection.signature;
 
+import tech.hiddenproject.aide.optional.IfTrueConditional;
+import tech.hiddenproject.aide.optional.ObjectUtils;
+import tech.hiddenproject.aide.reflection.exception.ReflectionException;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Objects;
-import tech.hiddenproject.aide.optional.IfTrueConditional;
-import tech.hiddenproject.aide.optional.ObjectUtils;
-import tech.hiddenproject.aide.reflection.exception.ReflectionException;
 
 /**
  * Represents generic method signature. {@link MethodSignature#equals(Object)} will check if method
@@ -53,20 +54,19 @@ public class MethodSignature implements AbstractSignature {
    * @return Signature of method
    */
   public static MethodSignature from(Executable executable) {
-    Class<?> rType = IfTrueConditional.create()
-        .ifTrue(executable.getClass().equals(Method.class))
-        .then(() -> getReturnType((Method) executable))
-        .ifTrue(executable.getClass().equals(Constructor.class))
-        .then(Object.class)
-        .orElseThrows(() -> ReflectionException.format("Wrapping is supported for "
-                                                           + "constructors and methods only!"));
+    Class<?> rType = IfTrueConditional.create().ifTrue(executable.getClass().equals(Method.class))
+                                               .then(() -> getReturnType((Method) executable))
+                                               .ifTrue(
+                                                   executable.getClass().equals(Constructor.class))
+                                               .then(Object.class).orElseThrows(
+            () -> ReflectionException.format(
+                "Wrapping is supported for " + "constructors and methods only!"));
     int pCount = IfTrueConditional.create()
         .ifTrue(ObjectUtils.isInstanceOf(executable, Method.class) && Modifier.isStatic(
             executable.getModifiers()))
         .then(executable.getParameterCount())
         .ifTrue(ObjectUtils.isInstanceOf(executable, Method.class))
-        .then(executable.getParameterCount() + 1)
-        .orElseGet(executable::getParameterCount);
+        .then(executable.getParameterCount() + 1).orElseGet(executable::getParameterCount);
     return new MethodSignature(executable.getDeclaringClass(), rType, pCount);
   }
 
@@ -94,10 +94,8 @@ public class MethodSignature implements AbstractSignature {
 
   @Override
   public String toString() {
-    return "MethodSignature{" +
-        "rType=" + rType +
-        ", pCount=" + pCount +
-        ", declaringClass=" + declaringClass +
+    return "MethodSignature{" + "rType=" + rType + ", pCount=" + pCount + ", declaringClass="
+        + declaringClass +
         '}';
   }
 

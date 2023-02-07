@@ -27,9 +27,7 @@ public class WrapperHolder<W> {
 
   @Override
   public String toString() {
-    return "WrapperHolder{" +
-        "wrapper=" + wrapper +
-        ", declaringInterface=" + declaringInterface +
-        '}';
+    return "WrapperHolder{" + "wrapper=" + wrapper + ", declaringInterface=" + declaringInterface
+        + '}';
   }
 }
